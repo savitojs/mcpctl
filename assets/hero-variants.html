@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>mcpctl Combined Hero</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background: #0a0a0a;
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        color: #a1a1aa;
+        padding: 48px 24px 120px;
+      }
+      .page { max-width: 920px; margin: 0 auto; }
+      h1 {
+        font-family: ui-serif, Georgia, serif;
+        font-weight: 400; font-size: 28px; color: #fafafa;
+        margin-bottom: 6px;
+      }
+      .sub { color: #52525b; margin-bottom: 32px; font-size: 14px; }
+      .frame {
+        background: #111;
+        border: 1px solid #27272a;
+        border-radius: 14px;
+        padding: 24px;
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+      .frame svg { max-width: 100%; height: auto; }
+      .notes { font-size: 13px; color: #52525b; max-width: 700px; line-height: 1.6; }
+      .notes strong { color: #a1a1aa; }
+      .notes code {
+        font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+        font-size: 0.9em; color: #8b5cf6;
+      }
+      .timing {
+        margin-top: 32px;
+        border: 1px solid #27272a;
+        border-radius: 10px;
+        overflow: hidden;
+        font-size: 13px;
+      }
+      .timing table { width: 100%; border-collapse: collapse; }
+      .timing th {
+        text-align: left; padding: 10px 14px;
+        background: #18181b; color: #71717a;
+        font-family: ui-monospace, 'SF Mono', monospace;
+        font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+        border-bottom: 1px solid #27272a;
+      }
+      .timing td {
+        padding: 8px 14px; border-bottom: 1px solid #1c1c1f;
+        color: #a1a1aa;
+      }
+      .timing tr:last-child td { border-bottom: none; }
+      .timing .t { font-family: ui-monospace, monospace; color: #8b5cf6; }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <h1>mcpctl Combined Hero</h1>
+      <p class="sub">Toggle switches + context bar + terminal commands, synchronized on a 12s loop.</p>
+
+      <div class="frame">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" fill="none" width="800">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="800" y2="240" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="240" rx="12" fill="url(#bg)"/>
+
+  <!-- ======================== BRANDING ======================== -->
+
+  <text x="48" y="44" fill="#8b5cf6" font-family="SF Mono,Monaco,Consolas,monospace" font-size="34" font-weight="bold">mcpctl</text>
+  <text x="48" y="60" fill="#94a3b8" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif" font-size="13">MCP server manager for Claude Code</text>
+
+  <!-- Type pills (top right) -->
+  <rect x="460" y="30" width="48" height="20" rx="10" fill="#8b5cf6" opacity="0.12"/>
+  <text x="484" y="44" text-anchor="middle" fill="#a78bfa" font-family="SF Mono,Monaco,Consolas,monospace" font-size="10" font-weight="600">npm</text>
+  <rect x="516" y="30" width="60" height="20" rx="10" fill="#8b5cf6" opacity="0.12"/>
+  <text x="546" y="44" text-anchor="middle" fill="#a78bfa" font-family="SF Mono,Monaco,Consolas,monospace" font-size="10" font-weight="600">python</text>
+  <rect x="584" y="30" width="60" height="20" rx="10" fill="#3b82f6" opacity="0.12"/>
+  <text x="614" y="44" text-anchor="middle" fill="#60a5fa" font-family="SF Mono,Monaco,Consolas,monospace" font-size="10" font-weight="600">docker</text>
+  <rect x="652" y="30" width="66" height="20" rx="10" fill="#3b82f6" opacity="0.12"/>
+  <text x="685" y="44" text-anchor="middle" fill="#60a5fa" font-family="SF Mono,Monaco,Consolas,monospace" font-size="10" font-weight="600">podman</text>
+
+  <!-- ======================== DIVIDERS ======================== -->
+
+  <line x1="48" y1="70" x2="752" y2="70" stroke="#1e293b" stroke-width="0.5"/>
+  <line x1="362" y1="78" x2="362" y2="198" stroke="#1e293b" stroke-width="0.5"/>
+
+  <!--
+    ANIMATION TIMING (12s loop, 7 keyframes)
+    ==========================================
+    keyTimes: 0     0.167  0.25   0.417  0.667  0.833  1
+    seconds:  0s    2s     3s     5s     8s     10s    12s
+    phase:    idle  cmd    move   hold   move   idle   loop
+  -->
+
+  <!-- ======================== LEFT: TOGGLE SWITCHES ======================== -->
+
+  <!-- ---- github (animates OFF then ON) ---- -->
+  <text x="56" y="96" fill="#94a3b8" font-family="SF Mono,Monaco,Consolas,monospace" font-size="13">github</text>
+  <text x="120" y="96" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif" font-size="10">npm</text>
+
+  <rect x="262" y="82" width="46" height="24" rx="12" fill="#1e2530" stroke="#2a3444" stroke-width="0.5"/>
+  <rect x="262" y="82" width="46" height="24" rx="12" fill="#22c55e" opacity="0.35">
+    <animate attributeName="opacity"
+             values="0.35;0.35;0.35;0;0;0.35;0.35"
+             keyTimes="0;0.167;0.25;0.417;0.667;0.833;1"
+             dur="12s" repeatCount="indefinite"
+             calcMode="spline"
+             keySplines="0 0 1 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1"/></rect>
+  <circle cy="94" r="9" fill="#f0f0f0">
+    <animate attributeName="cx"
+             values="299;299;299;273;273;299;299"
+             keyTimes="0;0.167;0.25;0.417;0.667;0.833;1"
+             dur="12s" repeatCount="indefinite"
+             calcMode="spline"
+             keySplines="0 0 1 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1"/></circle>
+  <text x="318" y="98" fill="#4ade80" font-family="SF Mono,Monaco,Consolas,monospace" font-size="10" font-weight="600">ON<animate attributeName="opacity" values="1;1;1;0;0;1;1" keyTimes="0;0.167;0.25;0.417;0.667;0.833;1" dur="12s" repeatCount="indefinite"/></text>
+  <text x="318" y="98" fill="#64748b" font-family="SF Mono,Monaco,Consolas,monospace" font-size="10" opacity="0">OFF<animate attributeName="opacity" values="0;0;0;1;1;0;0" keyTimes="0;0.167;0.25;0.417;0.667;0.833;1" dur="12s" repeatCount="indefinite"/></text>
+
+  <line x1="56" y1="114" x2="345" y2="114" stroke="#1e293b" stroke-width="0.5"/>
+
+  <!-- ---- postgres (stays ON) ---- -->
+  <text x="56" y="136" fill="#94a3b8" font-family="SF Mono,Monaco,Consolas,monospace" font-size="13">postgres</text>
+  <text x="134" y="136" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif" font-size="10">docker</text>
+
+  <rect x="262" y="122" width="46" height="24" rx="12" fill="#1e2530" stroke="#2a3444" stroke-width="0.5"/>
+  <rect x="262" y="122" width="46" height="24" rx="12" fill="#22c55e" opacity="0.35"/>
+  <circle cx="299" cy="134" r="9" fill="#f0f0f0"/>
+  <text x="318" y="138" fill="#4ade80" font-family="SF Mono,Monaco,Consolas,monospace" font-size="10" font-weight="600">ON</text>
+
+  <line x1="56" y1="154" x2="345" y2="154" stroke="#1e293b" stroke-width="0.5"/>
+
+  <!-- ---- memory (animates same as github) ---- -->
+  <text x="56" y="176" fill="#94a3b8" font-family="SF Mono,Monaco,Consolas,monospace" font-size="13">memory</text>
+  <text x="120" y="176" fill="#475569" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif" font-size="10">npm</text>
+
+  <rect x="262" y="162" width="46" height="24" rx="12" fill="#1e2530" stroke="#2a3444" stroke-width="0.5"/>
+  <rect x="262" y="162" width="46" height="24" rx="12" fill="#22c55e" opacity="0.35">
+    <animate attributeName="opacity"
+             values="0.35;0.35;0.35;0;0;0.35;0.35"
+             keyTimes="0;0.167;0.25;0.417;0.667;0.833;1"
+             dur="12s" repeatCount="indefinite"
+             calcMode="spline"
+             keySplines="0 0 1 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1"/></rect>
+  <circle cy="174" r="9" fill="#f0f0f0">
+    <animate attributeName="cx"
+             values="299;299;299;273;273;299;299"
+             keyTimes="0;0.167;0.25;0.417;0.667;0.833;1"
+             dur="12s" repeatCount="indefinite"
+             calcMode="spline"
+             keySplines="0 0 1 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1"/></circle>
+  <text x="318" y="178" fill="#4ade80" font-family="SF Mono,Monaco,Consolas,monospace" font-size="10" font-weight="600">ON<animate attributeName="opacity" values="1;1;1;0;0;1;1" keyTimes="0;0.167;0.25;0.417;0.667;0.833;1" dur="12s" repeatCount="indefinite"/></text>
+  <text x="318" y="178" fill="#64748b" font-family="SF Mono,Monaco,Consolas,monospace" font-size="10" opacity="0">OFF<animate attributeName="opacity" values="0;0;0;1;1;0;0" keyTimes="0;0.167;0.25;0.417;0.667;0.833;1" dur="12s" repeatCount="indefinite"/></text>
+
+  <!-- ======================== RIGHT: CONTEXT BAR ======================== -->
+
+  <text x="382" y="82" fill="#64748b" font-family="SF Mono,Monaco,Consolas,monospace" font-size="9.5" letter-spacing="0.06em">CONTEXT WINDOW (200K)</text>
+
+  <!-- Bar track -->
+  <rect x="382" y="88" width="370" height="26" rx="5" fill="#141a26" stroke="#1e293b" stroke-width="0.5"/>
+
+  <!-- Bar fill (animated width: 222px = 60% -> 74px = 20%) -->
+  <rect x="382" y="88" height="26" rx="5" fill="#ef4444" opacity="0.25">
+    <animate attributeName="width"
+             values="222;222;222;74;74;222;222"
+             keyTimes="0;0.167;0.25;0.417;0.667;0.833;1"
+             dur="12s" repeatCount="indefinite"
+             calcMode="spline"
+             keySplines="0 0 1 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1;0.4 0 0.2 1;0 0 1 1"/></rect>
+
+  <!-- Label: 3 servers (visible when full) -->
+  <text x="394" y="106" fill="#fca5a5" font-family="SF Mono,Monaco,Consolas,monospace" font-size="11" font-weight="600">3 servers: ~120k tokens<animate attributeName="opacity" values="1;1;1;0;0;1;1" keyTimes="0;0.167;0.25;0.417;0.667;0.833;1" dur="12s" repeatCount="indefinite"/></text>
+
+  <!-- Label: 1 server (visible when shrunk) -->
+  <text x="394" y="106" fill="#86efac" font-family="SF Mono,Monaco,Consolas,monospace" font-size="11" font-weight="600" opacity="0">1 server: ~40k<animate attributeName="opacity" values="0;0;0;1;1;0;0" keyTimes="0;0.167;0.25;0.417;0.667;0.833;1" dur="12s" repeatCount="indefinite"/></text>
+
+  <!-- "+80k freed" badge (positioned in the freed dark space, right of bar fill) -->
+  <g opacity="0">
+    <animate attributeName="opacity"
+             values="0;0;0;1;1;0;0"
+             keyTimes="0;0.167;0.25;0.417;0.667;0.833;1"
+             dur="12s" repeatCount="indefinite"/>
+    <rect x="560" y="92" width="96" height="18" rx="9" fill="#22c55e" opacity="0.15"/>
+    <text x="608" y="105" text-anchor="middle" fill="#4ade80" font-family="SF Mono,Monaco,Consolas,monospace" font-size="10" font-weight="600">+80k freed</text>
+  </g>
+
+  <!-- ======================== RIGHT: TERMINAL ======================== -->
+
+  <rect x="382" y="124" width="370" height="62" rx="6" fill="#0d1117" stroke="#30363d" stroke-width="0.5"/>
+
+  <!-- Window dots -->
+  <circle cx="396" cy="134" r="3" fill="#f85149" opacity="0.6"/>
+  <circle cx="406" cy="134" r="3" fill="#f0c040" opacity="0.6"/>
+  <circle cx="416" cy="134" r="3" fill="#3fb950" opacity="0.6"/>
+
+  <!-- Blinking cursor (visible during idle phases only) -->
+  <g>
+    <animate attributeName="opacity"
+             values="1;0;0;0;0;0;1"
+             keyTimes="0;0.167;0.25;0.417;0.667;0.833;1"
+             dur="12s" repeatCount="indefinite"/>
+    <rect x="396" y="146" width="7" height="14" fill="#8b5cf6">
+      <animate attributeName="opacity" values="0;1;0" dur="1s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+
+  <!-- Command: $ mcpctl disable github memory -->
+  <text x="396" y="158" font-family="SF Mono,Monaco,Consolas,monospace" font-size="11.5" opacity="0">
+    <tspan fill="#6e7681">$</tspan><tspan fill="#c9d1d9" dx="4">mcpctl disable github memory</tspan>
+    <animate attributeName="opacity"
+             values="0;1;1;1;1;0;0"
+             keyTimes="0;0.167;0.25;0.417;0.667;0.833;1"
+             dur="12s" repeatCount="indefinite"/>
+  </text>
+
+  <!-- Result: checkmark + disabled message -->
+  <text x="396" y="174" font-family="SF Mono,Monaco,Consolas,monospace" font-size="11.5" opacity="0">
+    <tspan fill="#3fb950">&#x2713;</tspan><tspan fill="#8b949e" dx="3">Disabled (global): </tspan><tspan fill="#c9d1d9">github, memory</tspan>
+    <animate attributeName="opacity"
+             values="0;0;0;1;1;0;0"
+             keyTimes="0;0.167;0.25;0.417;0.667;0.833;1"
+             dur="12s" repeatCount="indefinite"/>
+  </text>
+
+  <!-- ======================== BOTTOM ======================== -->
+
+  <text x="48" y="224" font-family="SF Mono,Monaco,Consolas,monospace" font-size="11">
+    <tspan fill="#6e7681">$</tspan><tspan fill="#64748b" dx="4">uv tool install mcp-ctrl</tspan>
+  </text>
+
+</svg>
+      </div>
+
+      <div class="notes">
+        <p><strong>Animation sequence (12s loop):</strong></p>
+        <p>Idle (2s) &#x2192; command types in (1s) &#x2192; toggles flip OFF + bar shrinks (2s) &#x2192; hold with "+80k freed" (3s) &#x2192; reverse (2s) &#x2192; idle (2s) &#x2192; loop</p>
+        <p style="margin-top:12px"><strong>Overlap fix:</strong> "+80k freed" badge sits at x=560, well right of "1 server: ~40k" text ending at ~x=490. They occupy different regions of the bar track.</p>
+        <p style="margin-top:12px">Save as <code>assets/hero.svg</code> for the README.</p>
+      </div>
+
+      <div class="timing" style="margin-top:32px">
+        <table>
+          <tr>
+            <th>Time</th>
+            <th>Toggles</th>
+            <th>Context Bar</th>
+            <th>Terminal</th>
+          </tr>
+          <tr>
+            <td class="t">0-2s</td>
+            <td>All ON (green)</td>
+            <td>Full: 120k tokens (red)</td>
+            <td>Cursor blinking</td>
+          </tr>
+          <tr>
+            <td class="t">2s</td>
+            <td>All ON</td>
+            <td>Full</td>
+            <td><code style="color:#c9d1d9;font-size:12px">$ mcpctl disable github memory</code></td>
+          </tr>
+          <tr>
+            <td class="t">3-5s</td>
+            <td>github + memory slide OFF</td>
+            <td>Shrinks 222px &#x2192; 74px</td>
+            <td>Command visible</td>
+          </tr>
+          <tr>
+            <td class="t">5s</td>
+            <td>github=OFF, memory=OFF</td>
+            <td>40k tokens (green) + "+80k freed"</td>
+            <td><code style="color:#3fb950;font-size:12px">&#x2713;</code> <code style="color:#8b949e;font-size:12px">Disabled: github, memory</code></td>
+          </tr>
+          <tr>
+            <td class="t">5-8s</td>
+            <td>Hold OFF state</td>
+            <td>Hold with badge visible</td>
+            <td>Hold result</td>
+          </tr>
+          <tr>
+            <td class="t">8-10s</td>
+            <td>Slide back ON</td>
+            <td>Grows back to 222px</td>
+            <td>Fades out</td>
+          </tr>
+          <tr>
+            <td class="t">10-12s</td>
+            <td>All ON</td>
+            <td>Full: 120k (red)</td>
+            <td>Cursor blinking</td>
+          </tr>
+        </table>
+      </div>
+
+    </main>
+  </body>
+</html>
