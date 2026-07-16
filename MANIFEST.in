@@ -1,0 +1,16 @@
+include README.md
+include LICENSE
+include CHANGELOG.md
+include CONTRIBUTING.md
+include pyproject.toml
+
+recursive-include examples *.yaml *.example
+recursive-include docs *.md
+
+exclude .gitignore
+exclude mcp-servers.yaml
+exclude .env
+
+global-exclude __pycache__
+global-exclude *.py[co]
+global-exclude .DS_Store
