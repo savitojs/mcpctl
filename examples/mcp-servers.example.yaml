@@ -1,0 +1,282 @@
+# mcpctl configuration
+# Copy to ~/.config/mcpctl/mcp-servers.yaml and edit to your needs
+
+# Environment variable sources (loaded in order, later wins)
+env_files:
+  - ~/.env
+  - .env
+
+# Default settings
+defaults:
+  scope: global
+  restart_policy: on-failure
+  health_check:
+    enabled: true
+    interval: 30
+    timeout: 5
+
+servers:
+  # ── npm servers ──────────────────────────────────────────────
+
+  filesystem:
+    type: npm
+    description: "Secure file operations with configurable access"
+    transport: stdio
+    requires_container: false
+    mcp_config:
+      command: npx
+      args:
+        - -y
+        - "@modelcontextprotocol/server-filesystem"
+        - /path/to/your/projects
+      env: {}
+
+  github:
+    type: remote
+    description: "GitHub repository management (official remote server)"
+    transport: http
+    requires_container: false
+    mcp_config:
+      type: http
+      url: "https://api.githubcopilot.com/mcp"
+      headers:
+        Authorization: "Bearer ${GITHUB_PAT}"
+    env_vars:
+      - GITHUB_PAT
+
+  sequential-thinking:
+    type: npm
+    description: "Structured reasoning and problem-solving"
+    transport: stdio
+    requires_container: false
+    mcp_config:
+      command: npx
+      args:
+        - -y
+        - "@modelcontextprotocol/server-sequential-thinking"
+      env: {}
+
+  memory:
+    type: npm
+    description: "Persistent memory using knowledge graphs"
+    transport: stdio
+    requires_container: false
+    mcp_config:
+      command: npx
+      args:
+        - -y
+        - "@modelcontextprotocol/server-memory"
+      env: {}
+
+  playwright:
+    type: npm
+    description: "Modern multi-browser automation (Chromium, Firefox, WebKit)"
+    transport: stdio
+    requires_container: false
+    mcp_config:
+      command: npx
+      args:
+        - -y
+        - "@playwright/mcp-server"
+      env: {}
+
+  fetch:
+    type: npm
+    description: "Simple HTTP GET/POST requests"
+    transport: stdio
+    requires_container: false
+    mcp_config:
+      command: npx
+      args:
+        - -y
+        - "@kazuph/mcp-fetch"
+      env: {}
+
+  chrome-devtools:
+    type: npm
+    description: "Chrome DevTools Protocol for browser automation"
+    transport: stdio
+    requires_container: false
+    mcp_config:
+      command: npx
+      args:
+        - -y
+        - chrome-devtools-mcp@latest
+      env: {}
+
+  context7:
+    type: npm
+    description: "Version-pinned library docs in context (stops API hallucinations)"
+    transport: stdio
+    requires_container: false
+    mcp_config:
+      command: npx
+      args:
+        - -y
+        - "@upstash/context7-mcp"
+      env: {}
+
+  exa:
+    type: npm
+    description: "Semantic web search and live crawling"
+    transport: stdio
+    requires_container: false
+    mcp_config:
+      command: npx
+      args:
+        - -y
+        - exa-mcp-server
+      env:
+        EXA_API_KEY: "${EXA_API_KEY}"
+    env_vars:
+      - EXA_API_KEY
+
+  sentry:
+    type: npm
+    description: "Sentry error tracking and issue management"
+    transport: stdio
+    requires_container: false
+    mcp_config:
+      command: npx
+      args:
+        - -y
+        - "@sentry/mcp-server"
+      env:
+        SENTRY_AUTH_TOKEN: "${SENTRY_AUTH_TOKEN}"
+    env_vars:
+      - SENTRY_AUTH_TOKEN
+
+  # ── python servers (uvx) ────────────────────────────────────
+
+  time:
+    type: python
+    description: "Current time and timezone conversion with IANA timezones"
+    transport: stdio
+    requires_container: false
+    mcp_config:
+      command: uvx
+      args:
+        - mcp-server-time
+      env: {}
+
+  git:
+    type: python
+    description: "Git repository operations (log, diff, blame, branch)"
+    transport: stdio
+    requires_container: false
+    mcp_config:
+      command: uvx
+      args:
+        - mcp-server-git
+      env: {}
+
+  notion:
+    type: python
+    description: "Notion workspace pages and databases"
+    transport: stdio
+    requires_container: false
+    mcp_config:
+      command: uvx
+      args:
+        - mcp-server-notion
+      env:
+        NOTION_API_KEY: "${NOTION_API_KEY}"
+    env_vars:
+      - NOTION_API_KEY
+
+  atlassian:
+    type: python
+    description: "Jira and Confluence access via MCP"
+    transport: stdio
+    requires_container: false
+    mcp_config:
+      command: uvx
+      args:
+        - mcp-atlassian
+      env:
+        JIRA_URL: "${JIRA_URL}"
+        JIRA_USERNAME: "${JIRA_USERNAME}"
+        JIRA_API_TOKEN: "${JIRA_API_TOKEN}"
+    env_vars:
+      - JIRA_URL
+      - JIRA_USERNAME
+      - JIRA_API_TOKEN
+
+  # ── docker servers ──────────────────────────────────────────
+
+  excalidraw:
+    type: docker
+    description: "Create diagrams with Excalidraw via MCP"
+    transport: stdio
+    requires_container: true
+    container:
+      name: mcp-excalidraw-canvas
+      image: ghcr.io/yctimlin/mcp_excalidraw-canvas:latest
+      ports:
+        - "3000:3000"
+    mcp_config:
+      command: docker
+      args:
+        - run
+        - -i
+        - --rm
+        - --add-host=host.docker.internal:host-gateway
+        - -e
+        - EXPRESS_SERVER_URL=http://host.docker.internal:3000
+        - -e
+        - ENABLE_CANVAS_SYNC=true
+        - ghcr.io/yctimlin/mcp_excalidraw:latest
+      env: {}
+
+  postgres:
+    type: docker
+    description: "PostgreSQL database access"
+    transport: stdio
+    requires_container: true
+    container:
+      name: mcp-postgres
+      image: postgres:16-alpine
+      ports:
+        - "5432:5432"
+      environment:
+        POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-postgres}"
+        POSTGRES_DB: "${POSTGRES_DB:-mydb}"
+    mcp_config:
+      command: npx
+      args:
+        - -y
+        - mcp-postgres
+        - "postgresql://postgres:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB:-mydb}"
+      env: {}
+    env_vars:
+      - POSTGRES_PASSWORD
+
+  sonarqube:
+    type: docker
+    description: "SonarQube code quality and security analysis via MCP"
+    transport: stdio
+    requires_container: false
+    mcp_config:
+      command: docker
+      args:
+        - run
+        - -i
+        - --rm
+        - --network=host
+        - --entrypoint
+        - /bin/sh
+        - -v
+        - /etc/pki/tls/certs/ca-bundle.crt:/usr/local/share/ca-certificates/rh-ca-bundle.crt:ro
+        - -e
+        - SONARQUBE_URL
+        - -e
+        - SONARQUBE_TOKEN
+        - docker.io/mcp/sonarqube
+        - -c
+        - /usr/local/bin/install-certificates >&2 && exec java -jar /app/sonarqube-mcp-server.jar
+      env:
+        SONARQUBE_URL: "${SONARQUBE_URL}"
+        SONARQUBE_TOKEN: "${SONARQUBE_TOKEN}"
+    env_vars:
+      - SONARQUBE_URL
+      - SONARQUBE_TOKEN
