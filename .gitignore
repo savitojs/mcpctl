@@ -73,6 +73,12 @@ mcp-servers.yaml
 *.backup
 *.backup.*
 
+# TechDocs build output
+site/
+
+# uv lockfile
+uv.lock
+
 # Logs
 *.log
 logs/
