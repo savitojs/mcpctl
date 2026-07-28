@@ -16,26 +16,15 @@ defaults:
     timeout: 5
 
 servers:
-  # ── npm servers ──────────────────────────────────────────────
-
-  filesystem:
-    type: npm
-    description: "Secure file operations with configurable access"
-    transport: stdio
-    requires_container: false
-    mcp_config:
-      command: npx
-      args:
-        - -y
-        - "@modelcontextprotocol/server-filesystem"
-        - /path/to/your/projects
-      env: {}
+  # ── remote servers (no local install needed) ────────────────
 
   github:
     type: remote
-    description: "GitHub repository management (official remote server)"
+    description: "GitHub issues, PRs, code search, and repo management"
     transport: http
     requires_container: false
+    deps: []
+    notes: []
     mcp_config:
       type: http
       url: "https://api.githubcopilot.com/mcp"
@@ -44,11 +33,85 @@ servers:
     env_vars:
       - GITHUB_PAT
 
-  sequential-thinking:
+  context7:
+    type: remote
+    description: "Up-to-date, version-specific library docs to avoid hallucinated APIs"
+    transport: http
+    requires_container: false
+    deps: []
+    notes:
+      - "Free API key at context7.com/dashboard for higher rate limits"
+    mcp_config:
+      type: http
+      url: "https://mcp.context7.com/mcp"
+      headers:
+        Authorization: "Bearer ${CONTEXT7_API_KEY}"
+    env_vars:
+      - CONTEXT7_API_KEY
+
+  deepwiki:
+    type: remote
+    description: "AI-powered docs and Q&A for any public GitHub repo, no auth needed"
+    transport: http
+    requires_container: false
+    deps: []
+    notes:
+      - "Supports read_wiki_structure, read_wiki_contents, ask_question"
+      - "Public repos only, no API key required"
+    mcp_config:
+      type: http
+      url: "https://mcp.deepwiki.com/mcp"
+
+  supabase:
+    type: remote
+    description: "Manage Supabase projects, databases, auth, storage, and edge functions"
+    transport: http
+    requires_container: false
+    deps: []
+    notes:
+      - "Authenticates via OAuth on first use, no API key needed"
+      - "Add ?read_only=true to URL for safe read-only access"
+    mcp_config:
+      type: http
+      url: "https://mcp.supabase.com/mcp"
+
+  railway:
+    type: remote
+    description: "Deploy, manage, and monitor Railway projects and services"
+    transport: http
+    requires_container: false
+    deps: []
+    notes:
+      - "Authenticates via OAuth in browser"
+      - "Also available locally via: railway setup agent"
+    mcp_config:
+      type: http
+      url: "https://mcp.railway.com/mcp"
+
+  # ── npm servers (npx, no install needed) ────────────────────
+
+  filesystem:
     type: npm
-    description: "Structured reasoning and problem-solving"
+    description: "Read, write, search, and manage files with configurable access paths"
     transport: stdio
     requires_container: false
+    deps: []
+    notes: []
+    mcp_config:
+      command: npx
+      args:
+        - -y
+        - "@modelcontextprotocol/server-filesystem"
+        - /path/to/your/projects
+      env: {}
+
+  sequential-thinking:
+    type: npm
+    description: "Step-by-step reasoning for complex problem decomposition"
+    transport: stdio
+    requires_container: false
+    deps: []
+    notes: []
     mcp_config:
       command: npx
       args:
@@ -58,9 +121,11 @@ servers:
 
   memory:
     type: npm
-    description: "Persistent memory using knowledge graphs"
+    description: "Persistent memory across sessions using knowledge graphs"
     transport: stdio
     requires_container: false
+    deps: []
+    notes: []
     mcp_config:
       command: npx
       args:
@@ -70,9 +135,12 @@ servers:
 
   playwright:
     type: npm
-    description: "Modern multi-browser automation (Chromium, Firefox, WebKit)"
+    description: "Browser automation, screenshots, and page inspection (Chromium, Firefox, WebKit)"
     transport: stdio
     requires_container: false
+    deps: []
+    notes:
+      - "Use --headless for CI, --browser chrome|firefox|webkit to pick engine"
     mcp_config:
       command: npx
       args:
@@ -82,9 +150,11 @@ servers:
 
   fetch:
     type: npm
-    description: "Simple HTTP GET/POST requests"
+    description: "HTTP GET/POST requests and URL content extraction"
     transport: stdio
     requires_container: false
+    deps: []
+    notes: []
     mcp_config:
       command: npx
       args:
@@ -94,9 +164,12 @@ servers:
 
   chrome-devtools:
     type: npm
-    description: "Chrome DevTools Protocol for browser automation"
+    description: "Inspect and control a running Chrome browser via DevTools Protocol"
     transport: stdio
     requires_container: false
+    deps: []
+    notes:
+      - "Requires Chrome/Chromium running with remote debugging enabled"
     mcp_config:
       command: npx
       args:
@@ -104,23 +177,14 @@ servers:
         - chrome-devtools-mcp@latest
       env: {}
 
-  context7:
-    type: npm
-    description: "Version-pinned library docs in context (stops API hallucinations)"
-    transport: stdio
-    requires_container: false
-    mcp_config:
-      command: npx
-      args:
-        - -y
-        - "@upstash/context7-mcp"
-      env: {}
-
   exa:
     type: npm
-    description: "Semantic web search and live crawling"
+    description: "AI-native web search with semantic understanding and live crawling"
     transport: stdio
     requires_container: false
+    deps: []
+    notes:
+      - "API key from exa.ai"
     mcp_config:
       command: npx
       args:
@@ -133,9 +197,11 @@ servers:
 
   sentry:
     type: npm
-    description: "Sentry error tracking and issue management"
+    description: "Query Sentry errors, issues, and performance data from your projects"
     transport: stdio
     requires_container: false
+    deps: []
+    notes: []
     mcp_config:
       command: npx
       args:
@@ -146,13 +212,34 @@ servers:
     env_vars:
       - SENTRY_AUTH_TOKEN
 
+  firecrawl:
+    type: npm
+    description: "Scrape, crawl, and search the web with structured data extraction"
+    transport: stdio
+    requires_container: false
+    deps: []
+    notes:
+      - "API key from firecrawl.dev/app/api-keys"
+      - "Free tier: scrape, search, interact (rate-limited)"
+    mcp_config:
+      command: npx
+      args:
+        - -y
+        - firecrawl-mcp
+      env:
+        FIRECRAWL_API_KEY: "${FIRECRAWL_API_KEY}"
+    env_vars:
+      - FIRECRAWL_API_KEY
+
   # ── python servers (uvx) ────────────────────────────────────
 
   time:
     type: python
-    description: "Current time and timezone conversion with IANA timezones"
+    description: "Current time and timezone conversion using IANA timezone names"
     transport: stdio
     requires_container: false
+    deps: []
+    notes: []
     mcp_config:
       command: uvx
       args:
@@ -161,9 +248,11 @@ servers:
 
   git:
     type: python
-    description: "Git repository operations (log, diff, blame, branch)"
+    description: "Git log, diff, blame, branch, and commit operations"
     transport: stdio
     requires_container: false
+    deps: []
+    notes: []
     mcp_config:
       command: uvx
       args:
@@ -172,9 +261,11 @@ servers:
 
   notion:
     type: python
-    description: "Notion workspace pages and databases"
+    description: "Read and update Notion pages, databases, and blocks"
     transport: stdio
     requires_container: false
+    deps: []
+    notes: []
     mcp_config:
       command: uvx
       args:
@@ -186,9 +277,11 @@ servers:
 
   atlassian:
     type: python
-    description: "Jira and Confluence access via MCP"
+    description: "Search and update Jira issues and Confluence pages"
     transport: stdio
     requires_container: false
+    deps: []
+    notes: []
     mcp_config:
       command: uvx
       args:
@@ -202,18 +295,40 @@ servers:
       - JIRA_USERNAME
       - JIRA_API_TOKEN
 
+  diagrams:
+    type: python
+    description: "Render cloud architecture (AWS/GCP/K8s), Mermaid, and PlantUML diagrams"
+    transport: stdio
+    requires_container: false
+    deps:
+      - graphviz
+    notes:
+      - "Info:"
+      - "   @mermaid-js/mermaid-cli (npm) for render_mermaid"
+      - "   java + plantuml is needed for render_plantuml"
+      - "For more info: https://mcpservers.org/servers/byteoverdev/diagrams-mcp"
+    mcp_config:
+      command: python
+      args:
+        - -c
+        - "from diagrams_mcp.server import mcp; mcp.run(transport='stdio')"
+      env: {}
+    # pip install diagrams-mcp-server
+
   # ── docker servers ──────────────────────────────────────────
 
   excalidraw:
     type: docker
-    description: "Create diagrams with Excalidraw via MCP"
+    description: "Interactive whiteboard diagrams with Excalidraw canvas"
     transport: stdio
     requires_container: true
+    deps: []
+    notes: []
     container:
       name: mcp-excalidraw-canvas
       image: ghcr.io/yctimlin/mcp_excalidraw-canvas:latest
       ports:
-        - "3000:3000"
+        - "8006:3000"
     mcp_config:
       command: docker
       args:
@@ -222,7 +337,7 @@ servers:
         - --rm
         - --add-host=host.docker.internal:host-gateway
         - -e
-        - EXPRESS_SERVER_URL=http://host.docker.internal:3000
+        - EXPRESS_SERVER_URL=http://host.docker.internal:8006
         - -e
         - ENABLE_CANVAS_SYNC=true
         - ghcr.io/yctimlin/mcp_excalidraw:latest
@@ -230,9 +345,11 @@ servers:
 
   postgres:
     type: docker
-    description: "PostgreSQL database access"
+    description: "Run SQL queries and inspect PostgreSQL schema and data"
     transport: stdio
     requires_container: true
+    deps: []
+    notes: []
     container:
       name: mcp-postgres
       image: postgres:16-alpine
@@ -253,9 +370,11 @@ servers:
 
   sonarqube:
     type: docker
-    description: "SonarQube code quality and security analysis via MCP"
+    description: "Run SonarQube code quality and security scans on your projects"
     transport: stdio
     requires_container: false
+    deps: []
+    notes: []
     mcp_config:
       command: docker
       args:

@@ -42,23 +42,25 @@ def require_container_runtime() -> str:
         sys.exit(1)
     return runtime
 
-def find_project_root() -> Path | None:
-    """Find project root via git, return None if not in a repo."""
-    result = subprocess.run(
-        ["git", "rev-parse", "--show-toplevel"],
-        capture_output=True, text=True, check=False
-    )
-    if result.returncode == 0:
-        return Path(result.stdout.strip())
-    return None
+PROJECT_MARKERS = (
+    '.git', 'pyproject.toml', 'package.json', 'Cargo.toml',
+    'go.mod', 'pom.xml', 'Makefile', 'Gemfile',
+)
 
 
-def get_project_config_path() -> Path | None:
-    """Return path to .mcp.json in the project root, or None."""
-    root = find_project_root()
-    if root:
-        return root / ".mcp.json"
-    return None
+def find_project_root() -> Path:
+    """Find project root by walking up from cwd looking for project markers.
+    Falls back to cwd if no markers found."""
+    current = Path.cwd().resolve()
+    for directory in (current, *current.parents):
+        if any((directory / marker).exists() for marker in PROJECT_MARKERS):
+            return directory
+    return current
+
+
+def get_project_config_path() -> Path:
+    """Return path to .mcp.json in the project root."""
+    return find_project_root() / ".mcp.json"
 
 
 def get_saved_scope() -> str | None:
@@ -87,10 +89,7 @@ def prompt_scope() -> str:
     project_path = get_project_config_path()
     console.print(f"\n[bold]Where should MCP servers be configured?[/bold]\n")
     console.print(f"  1. Global  (~/.claude.json) - available in all projects")
-    if project_path:
-        console.print(f"  2. Project ({project_path.parent.name}/.mcp.json) - only this project")
-    else:
-        console.print(f"  2. Project (.mcp.json) - only this project (not in a git repo)")
+    console.print(f"  2. Project ({project_path.parent.name}/.mcp.json) - only this project")
     console.print()
 
     while True:
@@ -99,9 +98,6 @@ def prompt_scope() -> str:
             scope = 'global'
             break
         elif choice == '2':
-            if not project_path:
-                print_error("Not in a git repository. Cannot use project scope.")
-                continue
             scope = 'project'
             break
 
@@ -119,20 +115,12 @@ def resolve_target_config(scope_flag: str | None) -> Path:
         return CLAUDE_GLOBAL_CONFIG
 
     if scope_flag == 'project':
-        project_path = get_project_config_path()
-        if not project_path:
-            print_error("Not in a git repository. Cannot use --project.")
-            sys.exit(1)
-        return project_path
+        return get_project_config_path()
 
     saved = get_saved_scope()
     if saved:
         if saved == 'project':
-            project_path = get_project_config_path()
-            if not project_path:
-                print_warning("Default scope is 'project' but not in a git repo, using global")
-                return CLAUDE_GLOBAL_CONFIG
-            return project_path
+            return get_project_config_path()
         return CLAUDE_GLOBAL_CONFIG
 
     return prompt_scope_and_resolve()
@@ -553,6 +541,13 @@ def enable_servers(server_names: List[str], dry_run: bool = False,
             failed.append(name)
             continue
 
+        deps = server_config.get('deps', [])
+        if deps:
+            confirm = input(f"  '{name}' needs {', '.join(deps)}. Installed? [y/N]: ").strip().lower()
+            if confirm not in ('y', 'yes'):
+                failed.append(name)
+                continue
+
         if not dry_run and server_config.get('requires_container'):
             if not start_container(name, server_config):
                 failed.append(name)
@@ -571,6 +566,11 @@ def enable_servers(server_names: List[str], dry_run: bool = False,
     save_claude_config(claude_config, target)
     scope_label = "project" if target.name == ".mcp.json" else "global"
     print_success(f"Enabled ({scope_label}): {', '.join(enabled)}")
+    for name in enabled:
+        server_config = get_server_config(name)
+        if server_config:
+            for note in server_config.get('notes', []):
+                print_info(f"  {note}")
     print_warning("Restart Claude Code to apply changes")
     return len(failed) == 0
 
@@ -744,6 +744,15 @@ def _show_server_detail(console, name: str, config: Dict,
     if mcp_config.get('args'):
         console.print(f"  Args:        {' '.join(str(a) for a in mcp_config['args'])}")
 
+    deps = server_config.get('deps', [])
+    if deps:
+        console.print(f"  Deps:        {', '.join(deps)}")
+
+    notes = server_config.get('notes', [])
+    if notes:
+        for note in notes:
+            console.print(f"  Note:        [dim]{note}[/dim]")
+
     env_vars = server_config.get('env_vars', [])
     if env_vars:
         console.print(f"  Env vars:    {', '.join(env_vars)}")
@@ -800,15 +809,15 @@ def main():
         prog="mcpctl",
         description="Manage MCP servers for Claude Code.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""examples:
-  mcpctl list                           Show all servers and where they're enabled
-  mcpctl enable memory filesystem       Enable servers (prompts for scope on first use)
-  mcpctl enable --global memory         Enable in ~/.claude.json (all projects)
-  mcpctl enable --project memory        Enable in .mcp.json (this project only)
-  mcpctl enable --dry-run memory        Preview what would change
-  mcpctl disable memory                 Auto-detects scope, removes from where it's enabled
-  mcpctl list memory                    Show server details and container status
-  mcpctl config                         Show configuration and paths
+        epilog="""commands:
+  mcpctl list                           Show all servers with type, scope, and description
+  mcpctl list <server>                  Show server details: deps, notes, env vars, status
+  mcpctl enable <server> [server...]    Enable servers (prompts for scope on first use)
+  mcpctl enable --global <server>       Enable in ~/.claude.json (all projects)
+  mcpctl enable --project <server>      Enable in .mcp.json (current project only)
+  mcpctl enable --dry-run <server>      Preview config changes without writing
+  mcpctl disable <server>               Auto-detect scope and remove
+  mcpctl config                         Show config paths and defaults
 
 config:
   Server definitions:  ~/.config/mcpctl/mcp-servers.yaml

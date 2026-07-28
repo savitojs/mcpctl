@@ -1,0 +1,30 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: mcpctl
+  title: mcpctl
+  description: >-
+    MCP server manager for Claude Code. Enable, disable, and configure MCP servers
+    with container lifecycle management, dependency checks, and multi-scope support
+    for global and project-level configurations.
+  annotations:
+    github.com/project-slug: savitojs/mcpctl
+    backstage.io/techdocs-ref: dir:.
+    backstage.io/source-location: url:https://github.com/savitojs/mcpctl/
+  tags:
+    - python
+    - cli
+    - mcp
+    - claude-code
+    - ai
+  links:
+    - title: PyPI
+      url: https://pypi.org/project/mcp-ctrl/
+      icon: dashboard
+    - title: GitHub
+      url: https://github.com/savitojs/mcpctl
+      icon: github
+spec:
+  type: service
+  lifecycle: production
+  owner: user:default/savitojs

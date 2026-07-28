@@ -1,0 +1,14 @@
+site_name: mcpctl
+site_description: MCP server manager for Claude Code
+repo_url: https://github.com/savitojs/mcpctl
+edit_uri: edit/main/docs
+docs_dir: docs
+
+plugins:
+  - techdocs-core
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Usage: usage.md
+  - Server Registry: registry.md
